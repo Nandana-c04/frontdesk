@@ -58,10 +58,10 @@ export default function LoginPage() {
             🎫
           </div>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-gray-900">
-            Frontdesk Access Portal
+            Frontdesk
           </h2>
           <p className="mt-1 text-xs text-gray-500">
-            Arvo Systems Support & Incident Resolution System
+            Arvo Systems Support & Incident Resolution
           </p>
         </div>
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 : "text-gray-500 hover:text-gray-900"
             }`}
           >
-            🛡️ Support & Developer Desk
+            Support & Developer Desk
           </button>
           <button
             type="button"
@@ -87,27 +87,8 @@ export default function LoginPage() {
                 : "text-gray-500 hover:text-gray-900"
             }`}
           >
-            👤 Client Portal
+            Client Portal
           </button>
-        </div>
-
-        {/* Notice of separation */}
-        <div
-          className={`rounded-lg p-3 text-xs leading-relaxed border ${
-            portal === "support"
-              ? "bg-blue-50 border-blue-200 text-blue-900"
-              : "bg-green-50 border-green-200 text-green-900"
-          }`}
-        >
-          {portal === "support" ? (
-            <span>
-              <strong>Restricted Gateway:</strong> Only authorized support agents and developers can claim tickets, view internal technical notes, and manage SLAs.
-            </span>
-          ) : (
-            <span>
-              <strong>Customer Area:</strong> Submit issues and view public resolution updates. Confidential internal notes are strictly quarantined.
-            </span>
-          )}
         </div>
 
         {error && (
@@ -154,14 +135,14 @@ export default function LoginPage() {
                 : "bg-green-600 hover:bg-green-700 disabled:bg-green-400"
             }`}
           >
-            {loading ? "Verifying Credentials..." : `Sign In to ${portal === "support" ? "Support Desk" : "Client Portal"}`}
+            {loading ? "Signing in..." : `Sign In to ${portal === "support" ? "Support Desk" : "Client Portal"}`}
           </button>
         </form>
 
-        {/* Quick Demo Credentials Assistant */}
+        {/* Demo Credentials Section */}
         <div className="border-t border-gray-100 pt-4">
           <p className="text-[11px] font-medium text-gray-500 text-center mb-2">
-            Demo Credentials (Password: <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-gray-800">password123</code>):
+            Demo Accounts (Password: <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-gray-800">password123</code>):
           </p>
           <div className="flex flex-wrap justify-center gap-1.5 text-[11px]">
             {portal === "support" ? (
@@ -212,4 +193,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
