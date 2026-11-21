@@ -35,8 +35,12 @@ export default function UserNav() {
       </div>
 
       <button
-        onClick={logout}
-        className="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          logout();
+        }}
+        className="rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer"
       >
         Sign Out
       </button>
