@@ -5,38 +5,54 @@ import { UserInfo } from "@/types";
 
 type UserContextType = {
   currentUser: UserInfo | null;
-  users: UserInfo[];
-  setCurrentUser: (user: UserInfo) => void;
   loading: boolean;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType>({
   currentUser: null,
-  users: [],
-  setCurrentUser: () => {},
   loading: true,
+  logout: async () => {},
+  refreshUser: async () => {},
 });
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [users, setUsers] = useState<UserInfo[]>([]);
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUser = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+      } else {
+        setCurrentUser(null);
+      }
+    } catch {
+      setCurrentUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setCurrentUser(null);
+      window.location.href = "/login";
+    } catch {
+      window.location.href = "/login";
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/users")
-      .then((r) => r.json())
-      .then((data: UserInfo[]) => {
-        setUsers(data);
-        // Default to the first agent
-        const defaultUser = data.find((u) => u.role === "AGENT") ?? data[0];
-        if (defaultUser) setCurrentUser(defaultUser);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    refreshUser();
   }, []);
 
   return (
-    <UserContext.Provider value={{ currentUser, users, setCurrentUser, loading }}>
+    <UserContext.Provider value={{ currentUser, loading, logout, refreshUser }}>
       {children}
     </UserContext.Provider>
   );
@@ -45,4 +61,3 @@ export function UserProvider({ children }: { children: ReactNode }) {
 export function useUser() {
   return useContext(UserContext);
 }
-

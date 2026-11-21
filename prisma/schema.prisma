@@ -35,15 +35,16 @@ enum MessageType {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  role      Role     @default(AGENT)
-  tickets   Ticket[] @relation("AssignedTickets")
-  createdTickets Ticket[] @relation("CreatedTickets")
-  messages  TicketMessage[]
-  auditLogs AuditLog[]
-  createdAt DateTime @default(now())
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  password       String          @default("$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRpH.9QhVz83u69oY1t9v3sZ4a9eS") // default: "password123"
+  role           Role            @default(AGENT)
+  tickets        Ticket[]        @relation("AssignedTickets")
+  createdTickets Ticket[]        @relation("CreatedTickets")
+  messages       TicketMessage[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime        @default(now())
 }
 
 model Ticket {

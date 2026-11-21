@@ -1,12 +1,17 @@
 /**
- * Seed script — populates the database with test users, tickets, and holidays
+ * Seed script — populates database with test accounts with secure hashed passwords
+ * Default password for all seeded users: "password123"
  */
 import { PrismaClient, Priority, TicketStatus, MessageType, Role } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Seeding database...");
+  console.log("🌱 Seeding database with secure authentication credentials...");
+
+  // Default hashed password ("password123")
+  const defaultPasswordHash = await bcrypt.hash("password123", 10);
 
   // Clean existing data
   await prisma.auditLog.deleteMany();
@@ -15,27 +20,29 @@ async function main() {
   await prisma.holiday.deleteMany();
   await prisma.user.deleteMany();
 
-  // --- Users ---
+  // --- Support Agents & Developers (Meera, Ravi, Sneha, Arun) ---
   const admin = await prisma.user.create({
-    data: { name: "Meera Krishnan", email: "meera@arvo.io", role: Role.ADMIN },
+    data: { name: "Meera Krishnan (Lead)", email: "meera@arvo.io", password: defaultPasswordHash, role: Role.ADMIN },
   });
   const agent1 = await prisma.user.create({
-    data: { name: "Ravi Kumar", email: "ravi@arvo.io", role: Role.AGENT },
+    data: { name: "Ravi Kumar (Support Eng)", email: "ravi@arvo.io", password: defaultPasswordHash, role: Role.AGENT },
   });
   const agent2 = await prisma.user.create({
-    data: { name: "Sneha Nair", email: "sneha@arvo.io", role: Role.AGENT },
+    data: { name: "Sneha Nair (Full Stack Dev)", email: "sneha@arvo.io", password: defaultPasswordHash, role: Role.AGENT },
   });
   const agent3 = await prisma.user.create({
-    data: { name: "Arun Menon", email: "arun@arvo.io", role: Role.AGENT },
+    data: { name: "Arun Menon (Support Eng)", email: "arun@arvo.io", password: defaultPasswordHash, role: Role.AGENT },
   });
+
+  // --- Customers (Priya, Vikram, Anita) ---
   const cust1 = await prisma.user.create({
-    data: { name: "Priya Sharma", email: "priya@client.com", role: Role.CUSTOMER },
+    data: { name: "Priya Sharma (Client)", email: "priya@client.com", password: defaultPasswordHash, role: Role.CUSTOMER },
   });
   const cust2 = await prisma.user.create({
-    data: { name: "Vikram Patel", email: "vikram@client.com", role: Role.CUSTOMER },
+    data: { name: "Vikram Patel (Client)", email: "vikram@client.com", password: defaultPasswordHash, role: Role.CUSTOMER },
   });
   const cust3 = await prisma.user.create({
-    data: { name: "Anita Das", email: "anita@client.com", role: Role.CUSTOMER },
+    data: { name: "Anita Das (Client)", email: "anita@client.com", password: defaultPasswordHash, role: Role.CUSTOMER },
   });
 
   // --- Holidays (2026 Indian holidays sample) ---
@@ -54,7 +61,7 @@ async function main() {
   const now = new Date();
   const hourMs = 3600000;
 
-  // Ticket 1: HIGH priority, OPEN, unassigned (SLA ticking)
+  // Ticket 1: HIGH priority, OPEN, unassigned
   const t1 = await prisma.ticket.create({
     data: {
       title: "Production server down — cannot access dashboard",
@@ -111,8 +118,8 @@ async function main() {
       status: TicketStatus.RESOLVED,
       createdById: cust1.id,
       assignedToId: agent3.id,
-      slaReplyDeadline: new Date(now.getTime() - 5 * hourMs), // breached
-      slaResolveDeadline: new Date(now.getTime() - 1 * hourMs), // breached
+      slaReplyDeadline: new Date(now.getTime() - 5 * hourMs),
+      slaResolveDeadline: new Date(now.getTime() - 1 * hourMs),
       firstResponseAt: new Date(now.getTime() - 2 * hourMs),
       resolvedAt: new Date(now.getTime() - 0.5 * hourMs),
       createdAt: new Date(now.getTime() - 10 * hourMs),
@@ -151,14 +158,11 @@ async function main() {
   // --- Messages ---
   await prisma.ticketMessage.createMany({
     data: [
-      // Ticket 2 conversation
       { ticketId: t2.id, senderId: cust2.id, type: MessageType.PUBLIC_REPLY, content: "The PDF export is broken again. Attached screenshot of the blank file.", createdAt: new Date(now.getTime() - 3 * hourMs) },
       { ticketId: t2.id, senderId: agent1.id, type: MessageType.PUBLIC_REPLY, content: "Hi Vikram, I can reproduce this. Looking into the report generation service now.", createdAt: new Date(now.getTime() - 1 * hourMs) },
       { ticketId: t2.id, senderId: agent1.id, type: MessageType.INTERNAL_NOTE, content: "Looks like the wkhtmltopdf service crashed after the last deploy. Need to check with DevOps.", createdAt: new Date(now.getTime() - 0.9 * hourMs) },
-      // Ticket 3 conversation
       { ticketId: t3.id, senderId: cust3.id, type: MessageType.PUBLIC_REPLY, content: "Where can I change my notification settings?", createdAt: new Date(now.getTime() - 5 * hourMs) },
       { ticketId: t3.id, senderId: agent2.id, type: MessageType.PUBLIC_REPLY, content: "Hi Anita, go to Settings > Notifications > Email Preferences. Can you let me know if you see the toggle there?", createdAt: new Date(now.getTime() - 2 * hourMs) },
-      // Ticket 4 conversation
       { ticketId: t4.id, senderId: cust1.id, type: MessageType.PUBLIC_REPLY, content: "SSO is broken! We have a demo tomorrow morning. URGENT.", createdAt: new Date(now.getTime() - 10 * hourMs) },
       { ticketId: t4.id, senderId: agent3.id, type: MessageType.INTERNAL_NOTE, content: "SAML cert expired. Customer's IT team needs to renew it on their IdP. This is NOT on our side.", createdAt: new Date(now.getTime() - 3 * hourMs) },
       { ticketId: t4.id, senderId: agent3.id, type: MessageType.PUBLIC_REPLY, content: "Hi Priya, the issue is an expired SAML certificate on your identity provider. Please ask your IT team to renew the certificate and re-upload it.", createdAt: new Date(now.getTime() - 2 * hourMs) },
@@ -179,12 +183,10 @@ async function main() {
     ],
   });
 
-  console.log("✅ Seeded successfully!");
-  console.log(`   Users: ${await prisma.user.count()}`);
-  console.log(`   Tickets: ${await prisma.ticket.count()}`);
-  console.log(`   Messages: ${await prisma.ticketMessage.count()}`);
-  console.log(`   Audit Logs: ${await prisma.auditLog.count()}`);
-  console.log(`   Holidays: ${await prisma.holiday.count()}`);
+  console.log("✅ Seeded successfully with encrypted credentials!");
+  console.log("   Credentials: password123 (for all seeded users)");
+  console.log("   Developer/Agent accounts: ravi@arvo.io, sneha@arvo.io, meera@arvo.io");
+  console.log("   Customer accounts: priya@client.com, vikram@client.com, anita@client.com");
 }
 
 main()

@@ -1,20 +1,24 @@
 /**
- * Shared request helpers — extracting "current user" from headers (simulated auth)
+ * Shared request helpers — extracting "current user" from verified JWT cookies/tokens
  */
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthUserFromRequest } from "@/lib/auth";
 
 export async function getCurrentUser(req: NextRequest) {
-  const userId = req.headers.get("x-user-id");
-  if (!userId) return null;
-  return prisma.user.findUnique({ where: { id: userId } });
+  const authPayload = await getAuthUserFromRequest(req);
+  if (!authPayload) return null;
+
+  return prisma.user.findUnique({
+    where: { id: authPayload.id },
+  });
 }
 
-export function unauthorized() {
-  return NextResponse.json({ error: "No user selected. Set x-user-id header." }, { status: 401 });
+export function unauthorized(msg = "Unauthorized: Please log in to continue") {
+  return NextResponse.json({ error: msg }, { status: 401 });
 }
 
-export function forbidden(msg = "Forbidden") {
+export function forbidden(msg = "Forbidden: You do not have permission to access this resource") {
   return NextResponse.json({ error: msg }, { status: 403 });
 }
 

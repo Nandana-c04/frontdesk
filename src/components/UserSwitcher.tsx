@@ -8,36 +8,38 @@ const roleBadgeColors: Record<string, string> = {
   CUSTOMER: "bg-green-100 text-green-800",
 };
 
-export default function UserSwitcher() {
-  const { currentUser, users, setCurrentUser } = useUser();
+export default function UserNav() {
+  const { currentUser, logout } = useUser();
 
   if (!currentUser) return null;
 
   return (
-    <div className="flex items-center gap-3">
-      <label className="text-sm font-medium text-gray-600">Acting as:</label>
-      <select
-        value={currentUser.id}
-        onChange={(e) => {
-          const user = users.find((u) => u.id === e.target.value);
-          if (user) setCurrentUser(user);
-        }}
-        className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white uppercase">
+          {currentUser.name.slice(0, 2)}
+        </div>
+        <div className="text-left">
+          <div className="text-xs font-semibold text-gray-900 leading-tight">
+            {currentUser.name}
+          </div>
+          <div className="text-[10px] text-gray-500">{currentUser.email}</div>
+        </div>
+        <span
+          className={`ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            roleBadgeColors[currentUser.role] ?? "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {currentUser.role === "CUSTOMER" ? "Client Portal" : "Support & Dev"}
+        </span>
+      </div>
+
+      <button
+        onClick={logout}
+        className="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
       >
-        {users.map((u) => (
-          <option key={u.id} value={u.id}>
-            {u.name} ({u.role})
-          </option>
-        ))}
-      </select>
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          roleBadgeColors[currentUser.role] ?? "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {currentUser.role}
-      </span>
+        Sign Out
+      </button>
     </div>
   );
 }
-
